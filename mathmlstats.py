@@ -32,20 +32,26 @@ def analyze(filename):
         for key, value in x.attrib.items():
             displaylist.append("{}={}".format(key, value))
             props.append("{}={}".format(key,value))
-        toap = ",".join([os.path.basename(filename),str(i),eqid,prefix," ".join(props),parenttag])
-        csvlist.append(toap)
+        if(outpath):
+            toap = ",".join([os.path.basename(filename),str(i),eqid,prefix," ".join(props),parenttag])
+            csvlist.append(toap)
         outertaglist.append(x.getparent().tag)
-    with open(os.path.join(outpath,os.path.basename(os.path.splitext(filename)[0])+'csv'),'w') as fh:
-        fh.write('\n'.join(csvlist))
+    if(outpath):
+        with open(os.path.join(outpath,os.path.basename(os.path.splitext(filename)[0])+'csv'),'w') as fh:
+            fh.write('\n'.join(csvlist))
     return(len(equations),Counter(outertaglist), Counter(displaylist))
 
 def main():
     global outpath
-    if len(sys.argv)!=3:
+    if len(sys.argv)<2:
         print("Usage: python3 mathmlstats.py /path/to/xml/files/ /path/to/desired/output/folder/")
+        print("Output path is optional")
         exit(1)
     path = sys.argv[1]
-    outpath = sys.argv[2]
+    if len(sys.argv==2):
+        outpath=''
+    else:
+        outpath = sys.argv[2]
     if not os.path.isdir(path):
         print("Error: input directory does not exist")
         exit(1)
