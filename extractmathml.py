@@ -7,6 +7,7 @@ import sys
 import multiprocessing as mp
 from collections import Counter
 import random
+import html
 
 
 def analyze(filename):
@@ -29,26 +30,32 @@ def analyze(filename):
             eqtext = re.sub(r'xmlns:xlink=\".*?\"','',eqtext)
             eqtext = re.sub(r'xmlns:oasis=\".*?\"','',eqtext)
             out.append(eqtext)
-        with open(os.path.join(outpath,os.path.basename(os.path.splitext(filename)[0][:-9]+'.xml')),'w') as fh:
-            fh.write('\n'.join(out))
+        print(len(out))
+        with open(os.path.join(outpath,os.path.basename(os.path.splitext(filename)[0][:-9]+'.xml')),'w',encoding="utf8") as fh:
+            outtext = '\n'.join(out)
+            outtext = outtext.split('\n')
+            fh.write('<root>\n')
+            for line in outtext:
+                fh.write('\t'+line+'\n')
+            fh.write('</root>')
 
 
 def main():
     global outpath
-    # if len(sys.argv)!=3:
-    #     print("Usage: python3 extractmathml.py /path/to/xml/files/ /path/to/desired/output/folder/")
-    #     print("Output path is optional")
-    #     exit(1)
-    # path = sys.argv[1]
-    # if len(sys.argv==2):
-    #     outpath=''
-    # else:
-    #     outpath = sys.argv[2]
-    # if not os.path.isdir(path):
-    #     print("Error: input directory does not exist")
-    #     exit(1)
-    path = '/media/jay/Data1/phrvd/all/'
-    outpath = '/media/jay/Data1/phrvd/extracted/'
+    if len(sys.argv)!=3:
+        print("Usage: python3 extractmathml.py /path/to/xml/files/ /path/to/desired/output/folder/")
+        print("Output path is optional")
+        exit(1)
+    path = sys.argv[1]
+    if len(sys.argv==2):
+        outpath=''
+    else:
+        outpath = sys.argv[2]
+    if not os.path.isdir(path):
+        print("Error: input directory does not exist")
+        exit(1)
+    # path = '/media/jay/Data1/phrvd/all/'
+    # outpath = '/media/jay/Data1/phrvd/extracted/'
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
     filelist = glob.glob(os.path.join(path,'*.xml'))
