@@ -37,7 +37,7 @@ def analyze(filename):
             csvlist.append(toap)
         outertaglist.append(x.getparent().tag)
     if(outpath):
-        with open(os.path.join(outpath,os.path.basename(os.path.splitext(filename)[0])+'csv'),'w') as fh:
+        with open(os.path.join(outpath,os.path.basename(os.path.splitext(filename)[0])+'.csv'),'w') as fh:
             fh.write('\n'.join(csvlist))
     return(len(equations),Counter(outertaglist), Counter(displaylist))
 
