@@ -2,6 +2,7 @@ from lxml import etree
 import re
 import glob
 import os
+import sys
 import multiprocessing as mp
 from collections import Counter
 
@@ -40,8 +41,16 @@ def analyze(filename):
 
 def main():
     global outpath
-    path = '/media/jay/Data1/phrvd/all/'
-    outpath = '/media/jay/Data1/phrvd/metadata/'
+    if len(sys.argv)!=3:
+        print("Usage: python3 mathmlstats.py /path/to/xml/files/ /path/to/desired/output/folder/")
+        exit(1)
+    path = sys.argv[1]
+    outpath = sys.argv[2]
+    if not os.path.isdir(path):
+        print("Error: input directory does not exist")
+        exit(1)
+    # path = '/media/jay/Data1/phrvd/all/'
+    # outpath = '/media/jay/Data1/phrvd/metadata/'
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
     filelist = glob.glob(os.path.join(path,'*.xml'))
