@@ -65,8 +65,8 @@ def main():
         maxthings += x[1]
         totdisplay += x[2]
     print("\n{} equations in the entire corpus".format(toteqs))
-    maxmostcommon = maxthings.most_common()
-    displaymostcommon = totdisplay.most_common()
+    maxmostcommon = maxthings.most_common(10)
+    displaymostcommon = totdisplay.most_common(10)
     print("\n10 most common parent tags:")
     for i, x in enumerate(maxmostcommon):
         print("{}: \"{}\" - {} occurrences".format(i+1,x[0],x[1]))
