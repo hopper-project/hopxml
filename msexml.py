@@ -12,6 +12,8 @@ import html
 
 def mse(filename):
     global outpath
+    print(outpath)
+    print(os.path.join(outpath,os.path.basename(filename)))
     with open(filename) as fh:
         text = fh.read()
     try:
@@ -33,6 +35,7 @@ def mse(filename):
         print(count[0][0])
     else:
         return
+    out = []
     math = root.findall(".//math")
     for eq in math:
         try:
@@ -42,28 +45,36 @@ def mse(filename):
                 eqtext = re.sub(r'xmlns:m(?:ml)?',"xmlns",eqtext)
                 eqtext = re.sub(r'xmlns:xlink=\".*?\"','',eqtext)
                 eqtext = re.sub(r'xmlns:oasis=\".*?\"','',eqtext)
-                print(eqtext)
+                out.append(eqtext)
                 continue
         except:
             continue
+    if len(out)>0:
+        print(os.path.join(outpath,os.path.basename(filename)))
+        with open(os.path.join(outpath,os.path.basename(filename)),'w') as fh:
+            fh.write('<root>\n')
+            for line in out:
+                fh.write('\t'+line+'\n')
+            fh.write('</root>')
 
 
 def main():
     global outpath
-    # if len(sys.argv)!=3:
-    #     print("Usage: python3 extractmathml.py /path/to/xml/files/ /path/to/desired/output/folder/")
-    #     print("Output path is optional")
-    #     exit(1)
-    # path = sys.argv[1]
-    # if len(sys.argv==2):
-    #     outpath=''
-    # else:
-    #     outpath = sys.argv[2]
-    # if not os.path.isdir(path):
-    #     print("Error: input directory does not exist")
-    #     exit(1)
-    path = '/media/jay/Data1/phrvd/all/'
-    outpath = '/media/jay/Data1/phrvd/msexml/'
+    if len(sys.argv)!=3:
+        print("Usage: python3 extractmathml.py /path/to/xml/files/ /path/to/desired/output/folder/")
+        print("Output path is optional")
+        exit(1)
+    path = sys.argv[1]
+    if len(sys.argv==2):
+        outpath=''
+    else:
+        outpath = sys.argv[2]
+    if not os.path.isdir(path):
+        print("Error: input directory does not exist")
+        exit(1)
+    # path = '/media/jay/Data1/phrvd/all/'
+    # outpath = '/media/jay/Data1/phrvd/msexml/'
+    print(outpath)
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
     filelist = glob.glob(os.path.join(path,'*.xml'))
