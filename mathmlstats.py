@@ -10,18 +10,23 @@ def analyze(filename):
     global outpath
     with open(filename) as fh:
         text = fh.read()
+    # re.findall expression to capture math prefix
     prefixmatches  = re.findall(r'(m(?:ml)?)\:math',text)
     if len(prefixmatches)==0:
         prefix = ""
     else:
         prefix = prefixmatches[0]
+    # remove all prefixes
+    # lxml has a hard time with non-universally prefixed namespaces
     text = re.sub(r'm(?:ml)?\:math',"math",text)
     root = etree.XML(text.encode())
     equations = root.findall(".//math")
-    outertaglist = []
-    displaylist = []
+    # parent tag list
+    parenttags = []
+    # math tag attribute list
+    attriblist = []
+    # list of strings to be written out to CSV
     csvlist = []
-    eqstrings = []
     for i, x in enumerate(equations):
         parenttag = x.getparent().tag
         props = []
@@ -30,16 +35,17 @@ def analyze(filename):
         except:
             eqid=""
         for key, value in x.attrib.items():
-            displaylist.append("{}={}".format(key, value))
+            attriblist.append("{}={}".format(key, value))
             props.append("{}={}".format(key,value))
         if(outpath):
+            # append: filename, eq index, math tag prefix, attributes, & parent tag
             toap = ",".join([os.path.basename(filename),str(i),eqid,prefix," ".join(props),parenttag])
             csvlist.append(toap)
-        outertaglist.append(x.getparent().tag)
+        parenttags.append(x.getparent().tag)
     if(outpath):
         with open(os.path.join(outpath,os.path.basename(os.path.splitext(filename)[0])+'.csv'),'w') as fh:
             fh.write('\n'.join(csvlist))
-    return(len(equations),Counter(outertaglist), Counter(displaylist))
+    return(len(equations),Counter(parenttags), Counter(attriblist))
 
 def main():
     global outpath
@@ -63,22 +69,29 @@ def main():
     print("{} xml files found".format(len(filelist)))
     pool = mp.Pool(mp.cpu_count())
     outlist = pool.map(analyze,filelist)
+    
     toteqs = 0
-    maxthings = Counter()
-    totdisplay = Counter()
+    parent_tags = Counter()
+    tag_attributes = Counter()
+
     for x in outlist:
         toteqs += x[0]
-        maxthings += x[1]
-        totdisplay += x[2]
+        parent_tags += x[1]
+        tag_attributes += x[2]
+
     print("\n{} equations in the entire corpus".format(toteqs))
-    maxmostcommon = maxthings.most_common(10)
-    displaymostcommon = totdisplay.most_common(10)
+
+    maxmostcommon = parent_tags.most_common(10)
+    displaymostcommon = tag_attributes.most_common(10)
+
     print("\n10 most common parent tags:")
     for i, x in enumerate(maxmostcommon):
         print("{}: \"{}\" - {} occurrences".format(i+1,x[0],x[1]))
+
     print("\n10 most common attributes in the <math> tag:")
     for i, x in enumerate(displaymostcommon):
         print("{}: \"{}\" - {} occurrences".format(i+1,x[0],x[1]))
+
     pool.close()
     pool.join()
 if __name__=='__main__':

@@ -15,12 +15,14 @@ def mse(filename):
     with open(filename) as fh:
         text = fh.read()
     try:
+        #parse with lxml
         root = etree.XML(text.encode())
     except:
         print("{}: lxml parsing failed".format(filename))
         return("{}: lxml parsing failed".format(filename))
     for x in root.findall('.//'):
         x.tag = etree.QName(x).localname
+    # eqref tag with attribute 'rids' used to reference equations in MathML
     references = root.findall(".//eqref")
     reflist = []
     out = []
@@ -34,6 +36,8 @@ def mse(filename):
         count = Counter(reflist).most_common(5)
         print(count[0][0])
         math = root.findall(".//math")
+        # iterate over every math tag
+        # write out the ones inside the formula tag with the most references
         for eq in math:
             try:
                 parentid = eq.getparent().attrib['id']
@@ -47,6 +51,8 @@ def mse(filename):
             except:
                 continue
     else:
+        # this is the case in which there are no equation references
+        # take the math tags inside the first formula tag
         math = root.findall('.//math')
         if len(math)>0:
             parent = math[0].getparent().getchildren()
@@ -57,13 +63,16 @@ def mse(filename):
                 eqtext = re.sub(r'xmlns:oasis=\".*?\"','',eqtext)
                 out.append(eqtext)
             toret = os.path.join(outpath,os.path.basename(filename))
-
+    # only generate output for files with math in them
     if len(out)>0:
         with open(os.path.join(outpath,os.path.basename(filename)),'w') as fh:
             fh.write('<root>\n')
             for line in out:
                 fh.write('\t'+line+'\n')
             fh.write('</root>')
+    # toret is a string that will be written out to a log file
+    # this only contains something if processing the document failed
+    # nothing is written for documents with no math
     return(toret)
 
 def main():

@@ -7,8 +7,6 @@ import sys
 import multiprocessing as mp
 from collections import Counter
 import random
-import html
-
 
 def analyze(filename):
     global outpath
@@ -19,10 +17,12 @@ def analyze(filename):
     except:
         print("{}: lxml parsing failed".format(filename))
         return
+    # remove all namespace prefixes
     for x in root.findall('.//'):
         x.tag = etree.QName(x).localname
     equations = root.findall(".//math")
     out = []
+    # if there is math, clean up xmlns statements and write the math tags to an output file
     if len(equations)>0:
         for i, eq in enumerate(equations):
             eqtext = etree.tostring(eq).decode()
@@ -42,18 +42,19 @@ def analyze(filename):
 
 def main():
     global outpath
-    if len(sys.argv)!=3:
+    if len(sys.argv)<2:
         print("Usage: python3 extractmathml.py /path/to/xml/files/ /path/to/desired/output/folder/")
         print("Output path is optional")
         exit(1)
     path = sys.argv[1]
     if len(sys.argv==2):
-        outpath=''
+        outpath='phrvd_extracted/'
     else:
-        outpath = sys.argv[2]
+        outpath = os.path.join(sys.argv[2])
     if not os.path.isdir(path):
         print("Error: input directory does not exist")
         exit(1)
+    path = os.path.abspath(path)
     # path = '/media/jay/Data1/phrvd/all/'
     # outpath = '/media/jay/Data1/phrvd/extracted/'
     if not os.path.isdir(outpath):
