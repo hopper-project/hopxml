@@ -12,19 +12,19 @@ import html
 
 def mse(filename):
     global outpath
-    print(outpath)
-    print(os.path.join(outpath,os.path.basename(filename)))
     with open(filename) as fh:
         text = fh.read()
     try:
         root = etree.XML(text.encode())
     except:
         print("{}: lxml parsing failed".format(filename))
-        return
+        return("{}: lxml parsing failed".format(filename))
     for x in root.findall('.//'):
         x.tag = etree.QName(x).localname
     references = root.findall(".//eqref")
     reflist = []
+    out = []
+    toret = ""
     if len(references)>0:
         for ref in references:
             try:
@@ -33,30 +33,38 @@ def mse(filename):
                 pass
         count = Counter(reflist).most_common(5)
         print(count[0][0])
+        math = root.findall(".//math")
+        for eq in math:
+            try:
+                parentid = eq.getparent().attrib['id']
+                if parentid==count[0][0]:
+                    eqtext = etree.tostring(eq).decode()
+                    eqtext = re.sub(r'xmlns:m(?:ml)?',"xmlns",eqtext)
+                    eqtext = re.sub(r'xmlns:xlink=\".*?\"','',eqtext)
+                    eqtext = re.sub(r'xmlns:oasis=\".*?\"','',eqtext)
+                    out.append(eqtext)
+                    continue
+            except:
+                continue
     else:
-        return
-    out = []
-    math = root.findall(".//math")
-    for eq in math:
-        try:
-            parentid = eq.getparent().attrib['id']
-            if parentid==count[0][0]:
-                eqtext = etree.tostring(eq).decode()
+        math = root.findall('.//math')
+        if len(math)>0:
+            parent = math[0].getparent().getchildren()
+            for math in parent:
+                eqtext = etree.tostring(math).decode()
                 eqtext = re.sub(r'xmlns:m(?:ml)?',"xmlns",eqtext)
                 eqtext = re.sub(r'xmlns:xlink=\".*?\"','',eqtext)
                 eqtext = re.sub(r'xmlns:oasis=\".*?\"','',eqtext)
                 out.append(eqtext)
-                continue
-        except:
-            continue
+            toret = os.path.join(outpath,os.path.basename(filename))
+
     if len(out)>0:
-        print(os.path.join(outpath,os.path.basename(filename)))
         with open(os.path.join(outpath,os.path.basename(filename)),'w') as fh:
             fh.write('<root>\n')
             for line in out:
                 fh.write('\t'+line+'\n')
             fh.write('</root>')
-
+    return(toret)
 
 def main():
     global outpath
@@ -78,10 +86,13 @@ def main():
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
     filelist = glob.glob(os.path.join(path,'*.xml'))
-    filelist = [random.choice(filelist)]
     print("{} xml files found".format(len(filelist)))
     pool = mp.Pool(mp.cpu_count())
     outlist = pool.map(mse,filelist)
+    with open(outpath[:-1]+'.log','w') as fh:
+        for x in outlist:
+            if x:
+                fh.write(x+'\n')
     pool.close()
     pool.join()
 if __name__=='__main__':
