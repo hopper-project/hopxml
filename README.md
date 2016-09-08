@@ -1,6 +1,28 @@
 # hopxml
 Tools for analyzing/extracting from/parsing xml files.
 
+## msexml.py
+
+Usage: `python3 msexml.py /path/to/xml/directory/ /path/to/output/directory/`
+
+Accepts a directory of .xml files.
+
+For every .xml file in the directory, it generates a corresponding xml in the output directory with the "most significant equation" (MSE).
+
+The MSE is determined to be either:
+* The most referenced equation
+* The first equation, in a document with no equation references
+
+## extractmathml.py
+
+Usage: `python3 extractmathml.py /path/to/xml/directory/ /path/to/output/directory/`
+
+Accepts a directory of .xml files.
+
+For every .xml file in that directory, it generates a corresponding xml in the output directory with every <math> statement in the document.
+
+Every <math> statement has its own xmlns referencing the LaTeXML standard, and should automatically render correctly in Firefox.
+
 ## mathmlstats.py
 
 Usage:`python3 mathmlstats.py /path/to/xml/directory/ /path/to/output/directory/`
@@ -13,8 +35,8 @@ The output csv has five comma-delimited 'columns', in order as follows:
 * File name
 * Index of equation in document (0-indexed)
 * Equation label (from parent), if applicable
-* Math tag prefix (e.g. if the document was standardized to contain \&lt;m:math\> \&lt;mml:math\> instead of &lt;math&gt;, it will denote that)
-* Math tag attributes (e.g. in &lt;math display="inline">, display is an attribute with a value of "inline") delimited by spaces
+* Math tag prefix (e.g. if the document was standardized to contain &lt;m:math&gt; &lt;mml:math&gt; instead of &lt;math&gt;, it will denote that)
+* Math tag attributes (e.g. in &lt;math display="inline"&gt;, display is an attribute with a value of "inline") delimited by spaces
 * Parent tag (formula, dformula)
 
 Once the script has finished processing all of the documents, it prints to stdout a formatted list of:
