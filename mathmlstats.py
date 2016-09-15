@@ -50,12 +50,12 @@ def analyze(filename):
 def main():
     global outpath
     if len(sys.argv)<2:
-        print("Usage: python3 mathmlstats.py /path/to/xml/files/ /path/to/desired/output/folder/")
+        print("Usage: python  3 mathmlstats.py /path/to/xml/files/ /path/to/desired/output/folder/")
         print("Output path is optional")
         exit(1)
     path = sys.argv[1]
     if len(sys.argv==2):
-        outpath=''
+        outpath='phrvd_output'
     else:
         outpath = sys.argv[2]
     if not os.path.isdir(path):
@@ -69,7 +69,7 @@ def main():
     print("{} xml files found".format(len(filelist)))
     pool = mp.Pool(mp.cpu_count())
     outlist = pool.map(analyze,filelist)
-    
+
     toteqs = 0
     parent_tags = Counter()
     tag_attributes = Counter()
@@ -81,8 +81,10 @@ def main():
 
     print("\n{} equations in the entire corpus".format(toteqs))
 
-    maxmostcommon = parent_tags.most_common(10)
-    displaymostcommon = tag_attributes.most_common(10)
+    mostcommon = 20
+
+    maxmostcommon = parent_tags.most_common(20)
+    displaymostcommon = tag_attributes.most_common(20)
 
     print("\n10 most common parent tags:")
     for i, x in enumerate(maxmostcommon):
